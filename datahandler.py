@@ -271,9 +271,9 @@ class DataHandler(object):
         modes_num = opts["gmm_modes_num"]
         np.random.seed(opts["random_seed"])
 
-        thetas = np.linspace(0, 2 * np.pi, modes_num)
+        thetas = np.linspace(0, 2 * np.pi, modes_num + 1)[:-1] # fix duplicate mode
         mixture_means = np.stack((radius * np.sin(thetas), radius * np.cos(thetas)), axis=1)
-        mixture_variance = 0.01
+        mixture_variance = 0.25
 
         # Now we sample points, for that we unseed
         np.random.seed()
@@ -311,8 +311,7 @@ class DataHandler(object):
             if num == 5: return 10 ** (2. / dim)
             return num ** 2.0 * 3
 
-        mixture_variance = \
-                max_val / variance_factor(modes_num, opts['toy_dataset_dim'])
+        mixture_variance = 0.25
 
         # Now we sample points, for that we unseed
         np.random.seed()
