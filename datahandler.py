@@ -212,6 +212,8 @@ class DataHandler(object):
         self.test_data = None
         self.labels = None
         self.test_labels = None
+        self.mean = None
+        self.var  = None
         self._load_data(opts)
 
     def _load_data(self, opts):
@@ -288,6 +290,8 @@ class DataHandler(object):
         self.data_shape = (opts['toy_dataset_dim'], 1, 1)
         self.data = Data(opts, X)
         self.num_points = len(X)
+        self.mean = mixture_means
+        self.var  = mixture_variance
 
     def _load_gmm(self, opts):
         """Sample data from the mixture of Gaussians.
@@ -311,7 +315,8 @@ class DataHandler(object):
             if num == 5: return 10 ** (2. / dim)
             return num ** 2.0 * 3
 
-        mixture_variance = 0.25
+        mixture_variance = \
+                max_val / variance_factor(modes_num, opts['toy_dataset_dim'])
 
         # Now we sample points, for that we unseed
         np.random.seed()
@@ -326,6 +331,8 @@ class DataHandler(object):
         self.data_shape = (opts['toy_dataset_dim'], 1, 1)
         self.data = Data(opts, X)
         self.num_points = len(X)
+        self.mean = mixture_means
+        self.var  = mixture_variance
 
         logging.debug('Loading GMM dataset done!')
 

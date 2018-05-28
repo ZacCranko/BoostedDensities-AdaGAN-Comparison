@@ -86,38 +86,60 @@ def main():
     opts['digit_classification_threshold'] = 0.999
     opts['inverse_metric'] = False # Use metric from the Unrolled GAN paper?
     opts['inverse_num'] = 1 # Number of real points to inverse.
+    
+    saver = utils.ArraySaver('disk', workdir=opts['work_dir'])
 
     if opts['verbose']:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
-    utils.create_dir(opts['work_dir'])
-    with utils.o_gfile((opts['work_dir'], 'params.txt'), 'w') as text:
-        text.write('Parameters:\n')
-        for key in opts:
-            text.write('%s : %s\n' % (key, opts[key]))
+    opts["number_of_runs"] = 15
+    likelihood = np.empty((opts["adagan_steps_total"], opts["number_of_runs"]))
+    coverage   = np.empty((opts["adagan_steps_total"], opts["number_of_runs"]))
 
-    data = DataHandler(opts)
-    assert data.num_points >= opts['batch_size'], 'Training set too small'
-    adagan = AdaGan(opts, data)
-    metrics = Metrics()
+    for run in range(opts["number_of_runs"]):
+        logging.info('Beginning run {} of {}'.format(run+1, opts["number_of_runs"]))
+        opts['random_seed'] += 1
 
-    for step in range(opts["adagan_steps_total"]):
-        logging.info('Running step {} of AdaGAN'.format(step + 1))
-        adagan.make_step(opts, data)
-        num_fake = opts['eval_points_num']
-        logging.debug('Sampling fake points')
-        fake_points = adagan.sample_mixture(num_fake)
-        logging.debug('Sampling more fake points')
-        more_fake_points = adagan.sample_mixture(500)
-        logging.debug('Plotting results')
-        metrics.make_plots(opts, step, data.data[:500],
-                fake_points[0:100], adagan._data_weights[:500])
-        logging.debug('Evaluating results')
-        (likelihood, C) = metrics.evaluate(
-            opts, step, data.data[:500],
-            fake_points, more_fake_points, prefix='')
-    logging.debug("AdaGan finished working!")
+        utils.create_dir(opts['work_dir'])
+        with utils.o_gfile((opts['work_dir'], 'params.txt'), 'w') as text:
+            text.write('Parameters:\n')
+            for key in opts:
+                text.write('%s : %s\n' % (key, opts[key]))
+
+        data = DataHandler(opts)
+        # saver.save('real_data_{0:02d}.npy'.format(run), data.data)
+        saver.save('real_data_params_mean_{0:02d}_var_{1:1.2f}.npy'.format(run, data.var), data.mean)
+        # assert data.num_points >= opts['batch_size'], 'Training set too small'
+        # adagan = AdaGan(opts, data)
+        # metrics = Metrics()
+
+            
+    
+
+        # for step in range(opts["adagan_steps_total"]):
+        #     logging.info('Running step {} of AdaGAN'.format(step + 1))
+        #     adagan.make_step(opts, data)
+        #     num_fake = opts['eval_points_num']
+        #     logging.debug('Sampling fake points')
+            
+        #     fake_points = adagan.sample_mixture(num_fake)
+        #     saver.save('fake_points_{:02d}.npy'.format(step), fake_points)
+
+        #     logging.debug('Sampling more fake points')
+        #     more_fake_points = adagan.sample_mixture(500)
+        #     logging.debug('Plotting results')
+        #     metrics.make_plots(opts, step, data.data[:500],
+        #             fake_points[0:100], adagan._data_weights[:500])
+        #     logging.debug('Evaluating results')
+        #     (lh, C) = metrics.evaluate(
+        #         opts, step, data.data,
+        #         fake_points, more_fake_points, prefix='')
+        #     likelihood[step, run] = lh
+        #     coverage[step, run]   = C
+        #     saver.save('likelihood.npy', likelihood)
+        #     saver.save('coverage.npy',   coverage)
+        # logging.debug("AdaGan finished working!")
 
 if __name__ == '__main__':
     main()
