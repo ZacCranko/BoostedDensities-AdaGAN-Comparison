@@ -117,29 +117,29 @@ def main():
             
     
 
-        # for step in range(opts["adagan_steps_total"]):
-        #     logging.info('Running step {} of AdaGAN'.format(step + 1))
-        #     adagan.make_step(opts, data)
-        #     num_fake = opts['eval_points_num']
-        #     logging.debug('Sampling fake points')
+        for step in range(opts["adagan_steps_total"]):
+            logging.info('Running step {} of AdaGAN'.format(step + 1))
+            adagan.make_step(opts, data)
+            num_fake = opts['eval_points_num']
+            logging.debug('Sampling fake points')
             
-        #     fake_points = adagan.sample_mixture(num_fake)
-        #     saver.save('fake_points_{:02d}.npy'.format(step), fake_points)
+            fake_points = adagan.sample_mixture(num_fake)
+            saver.save('fake_points_{:02d}.npy'.format(step), fake_points)
 
-        #     logging.debug('Sampling more fake points')
-        #     more_fake_points = adagan.sample_mixture(500)
-        #     logging.debug('Plotting results')
-        #     metrics.make_plots(opts, step, data.data[:500],
-        #             fake_points[0:100], adagan._data_weights[:500])
-        #     logging.debug('Evaluating results')
-        #     (lh, C) = metrics.evaluate(
-        #         opts, step, data.data,
-        #         fake_points, more_fake_points, prefix='')
-        #     likelihood[step, run] = lh
-        #     coverage[step, run]   = C
-        #     saver.save('likelihood.npy', likelihood)
-        #     saver.save('coverage.npy',   coverage)
-        # logging.debug("AdaGan finished working!")
+            logging.debug('Sampling more fake points')
+            more_fake_points = adagan.sample_mixture(500)
+            logging.debug('Plotting results')
+            metrics.make_plots(opts, step, data.data[:500],
+                    fake_points[0:100], adagan._data_weights[:500])
+            logging.debug('Evaluating results')
+            (lh, C) = metrics.evaluate(
+                opts, step, data.data,
+                fake_points, more_fake_points, prefix='')
+            likelihood[step, run] = lh
+            coverage[step, run]   = C
+            saver.save('likelihood.npy', likelihood)
+            saver.save('coverage.npy',   coverage)
+        logging.debug("AdaGan finished working!")
 
 if __name__ == '__main__':
     main()
